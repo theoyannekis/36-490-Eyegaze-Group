@@ -1,0 +1,64 @@
+---
+title: "Graphs for eye gaze project"
+author: "Eric Shi"
+output: 
+  html_document:
+    toc:  true
+    toc_float:  true
+    code_folding:  show
+---
+##Boxplot of comprehension scores grouped by Grades
+
+```{r,warning=FALSE,message=FALSE}
+library(ggplot2)
+my.data <- read.csv("PairedBoxPlots_Data.csv")
+
+my.data$id = factor(rep(1:60,2))
+x <- rep(c(1,2), each=60)
+my.data$xj <- jitter(x, amount=.03) 
+
+ggplot(data = my.data, aes(x = as.factor(Condition), y = Comprehension)) +
+  geom_boxplot() + 
+ geom_point(data = my.data, aes(x=xj, colour = factor(Grade),shape = factor(Grade))) +
+  geom_line(aes(x=xj, group=id, color = factor(Grade))) +
+  xlab("Condition") + ylab("Comprehension Score (%)") +
+  theme_bw() + #box
+  theme(axis.text=element_text(size=12,face="bold"), axis.title=element_text(size=20,face="bold")) +
+  labs(colour="Grade",shape="Grade") +
+  #Change scale_colour and scale_shape simultaneously if you would like to customize your legend
+  scale_colour_discrete(name  ="Your legend title here",
+                            breaks=c(1, 2),
+                            labels=c("Your label for 1", "Your label for 2")) +
+      scale_shape_discrete(name  ="Your legend title here",
+                           breaks=c(1, 2),
+                           labels=c("Your label for 1", "Your label for 2")) +
+  #Personalize colors here by replacing the inputs. P.S. something like "red" "blue" and other conventional colors works
+  scale_color_manual(values=c("#999999", "#E69F00"))
+```
+
+##Boxplots of gaze shifts aways grouped by grades(outliers removed)
+
+```{r,warning=FALSE,message=FALSE}
+my.data <- my.data[!(is.na(my.data$GazeShiftsAway)), ]
+ggplot(data = my.data, aes(x = as.factor(Condition), y = GazeShiftsAway)) +
+  #This should also work when you want to delete outliers but usually you need to define a limit somewhere
+  geom_boxplot() + 
+  geom_point(data = my.data, aes(colour = factor(Grade),shape = factor(Grade))) +
+  #Adjust the value here in the quantile function to decide what quantile are kept when everything else is removed
+  scale_y_continuous(limits = quantile(my.data$GazeShiftsAway, c(0, 0.99))) +
+  #change the values here to reset the scale of y-axis so that the empty part of the graph is removed
+  coord_cartesian(ylim=c(0, 60)) +
+  xlab("Condition") + ylab("Mean Gaze Shifts Away From Text") +
+  theme_bw() + #box
+  theme(axis.text=element_text(size=12,face="bold"), axis.title=element_text(size=20,face="bold")) +
+  labs(colour="Grade",shape="Grade") +
+  #Change scale_colour and scale_shape simultaneously if you would like to customize your legend
+  scale_colour_discrete(name  ="Your legend title here",
+                            breaks=c(1, 2),
+                            labels=c("Your label for 1", "Your label for 2")) +
+  scale_shape_discrete(name  ="Your legend title here",
+                           breaks=c(1, 2),
+                           labels=c("Your label for 1", "Your label for 2")) +
+  #Personalize colors here by replacing the inputs. P.S. something like "red" "blue" and other conventional colors works
+  scale_color_manual(values=c("#999999", "#E69F00"))
+```
