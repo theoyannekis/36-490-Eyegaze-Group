@@ -1,0 +1,46 @@
+title: "EEG random forest"
+output: 
+  html_document:
+    toc:  true
+    toc_float:  true
+    code_folding:  show
+---
+
+```{r}
+eeg <- read.csv("Eyetracking_Data.csv",na.string=c("999","999.00","#NULL!"),stringsAsFactors = FALSE)
+```
+
+
+```{r}
+library(randomForest)
+library(dplyr)
+eeg.rf <- na.omit(eeg)
+eeg.rf$ID <- NULL
+eeg.rf$DOT <- NULL
+eeg.rf$DOB <- NULL
+set.seed(110)
+train.rf.index <- sample(1:nrow(eeg.rf), 0.8*nrow(eeg.rf))
+test.rf <- eeg.rf[-train.rf.index, ]
+```
+
+```{r}
+rf.model <- randomForest(CompDiff ~ ., data = eeg.rf, 
+                         subset = train.rf.index, mtry = 10)
+```
+
+```{r}
+rf.predicted <- predict(rf.model, test.rf)
+
+rf.model
+
+length(rf.predicted)
+```
+
+```{r}
+library(ggplot2)
+ggplot(test.rf, aes(x = rf.predicted, y = CompDiff)) + 
+  geom_point() +
+  coord_fixed()
+```
+```
+
