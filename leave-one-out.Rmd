@@ -1,0 +1,117 @@
+
+title: "eyegaze random forest"
+output: 
+  html_document:
+    toc:  true
+    toc_float:  true
+    code_folding:  show
+---
+```{r, message = F, error = F}
+library(glmnet)
+```
+
+```{r}
+eyegaze <- read.csv("Eyetracking_Data.csv",na.string=c("999","999.00","#NULL!"),stringsAsFactors = FALSE)
+eyegaze <- na.omit(eyegaze)
+eyegaze$ID <- NULL
+eyegaze$DOT <- NULL
+eyegaze$DOB <- NULL
+eyegaze$Comp_E_Percent <- NULL
+eyegaze$Comp_E_Total <- NULL
+eyegaze$Comp_Percent <- NULL
+eyegaze$Comp_Total <- NULL
+eyegaze$Comp_S_Total <- NULL
+eyegaze$Comp_S_Percent <- NULL
+```
+
+```{r}
+set.seed(100)
+train.index <- sample(1:nrow(eyegaze), 0.7*nrow(eyegaze))
+train <- eyegaze[train.index, ]
+test <- eyegaze [-train.index, ]
+
+x <- model.matrix(CompDiff~., train)[,-1]
+y <- train$CompDiff
+
+x.test <- model.matrix(CompDiff~., test)[,-1]
+y.test <- test$CompDiff
+
+fit.lasso <- glmnet(x, y,family="gaussian", alpha=1)
+fit.ridge <- glmnet(x, y,family="gaussian", alpha=0)
+fit.elnet <- glmnet(x, y,family="gaussian", alpha=.5)
+
+```
+
+
+```{r}
+xs = list()
+for (i in 1:77){
+  if(i != 33){
+    xs[[i]] <- model.matrix(CompDiff~., train[,-i])[,-1]
+  }
+}
+
+
+xs.test = list()
+for (i in 1:77){
+  if(i != 33){
+    xs.test[[i]] <- model.matrix(CompDiff~., test[,-i])[,-1]
+  }
+}
+
+mse.lasso <- list()
+mse.ridge <- list()
+mse.elnet <- list()
+
+for (i in 1:77){
+  if(i != 33){
+    fit.lasso.xs <- cv.glmnet(xs[[1]], y, type.measure="mse", alpha=1, 
+                            family="gaussian")
+    fit.ridge.xs <- cv.glmnet(xs[[1]], y, type.measure="mse", alpha=0, 
+                            family="gaussian")
+    fit.elnet.xs <- cv.glmnet(xs[[1]], y, type.measure="mse", alpha=0.5, 
+                            family="gaussian")
+    yhat.lasso <- predict(fit.lasso.xs, s=fit.lasso.xs$lambda.1se, newx=xs.test[[i]])
+    yhat.ridge <- predict(fit.ridge.xs, s=fit.ridge.xs$lambda.1se, newx=xs.test[[i]])
+    yhat.elnet <- predict(fit.elnet.xs, s=fit.elnet.xs$lambda.1se, newx=xs.test[[i]])
+    mse.lasso[[i]] <- mean((y.test - yhat.lasso)^2)
+    mse.ridge[[i]] <- mean((y.test - yhat.ridge)^2)
+    mse.elnet[[i]] <- mean((y.test - yhat.elnet)^2)
+  }
+}
+
+```
+
+
+
+
+```{r}
+fit.lasso.cv <- cv.glmnet(x, y, type.measure="mse", alpha=1, 
+                          family="gaussian")
+fit.ridge.cv <- cv.glmnet(x, y, type.measure="mse", alpha=0,
+                          family="gaussian")
+fit.elnet.cv <- cv.glmnet(x, y, type.measure="mse", alpha=.5,
+                          family="gaussian")
+yhat.lasso.normal <- predict(fit.lasso.cv, s=fit.lasso.cv$lambda.1se, newx=x.test)
+yhat.ridge.normal <- predict(fit.ridge.cv, s=fit.ridge.cv$lambda.1se, newx=x.test)
+yhat.elnet.normal <- predict(fit.elnet.cv, s=fit.elnet.cv$lambda.1se, newx=x.test)
+mse.lasso.normal <- mean((y.test - yhat.lasso.normal)^2)
+mse.ridge.normal <- mean((y.test - yhat.ridge.normal)^2)
+mse.elnet.normal <- mean((y.test - yhat.elnet.normal)^2)
+```
+```{r}
+dim(x)
+```
+
+```{r}
+lasso.diff <- abs(unlist(mse.lasso) - mse.lasso.normal)
+ridge.diff <- abs(unlist(mse.ridge) - mse.ridge.normal)
+elnet.diff <- abs(unlist(mse.elnet) - mse.elnet.normal)
+```
+```{r}
+plot(lasso.diff)
+plot(ridge.diff)
+plot(elnet.diff)
+```
+
+
