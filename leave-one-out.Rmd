@@ -43,7 +43,7 @@ fit.elnet <- glmnet(x, y,family="gaussian", alpha=.5)
 ```
 
 
-```{r}
+```{r,cache=TRUE}
 xs = list()
 for (i in 1:77){
   if(i != 33){
@@ -104,9 +104,9 @@ dim(x)
 ```
 
 ```{r}
-lasso.diff <- abs(unlist(mse.lasso) - mse.lasso.normal)
-ridge.diff <- abs(unlist(mse.ridge) - mse.ridge.normal)
-elnet.diff <- abs(unlist(mse.elnet) - mse.elnet.normal)
+lasso.diff <- unlist(mse.lasso) - mse.lasso.normal
+ridge.diff <- unlist(mse.ridge) - mse.ridge.normal
+elnet.diff <- unlist(mse.elnet) - mse.elnet.normal
 ```
 ```{r}
 plot(lasso.diff)
