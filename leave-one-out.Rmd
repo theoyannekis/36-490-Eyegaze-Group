@@ -108,10 +108,55 @@ lasso.diff <- unlist(mse.lasso) - mse.lasso.normal
 ridge.diff <- unlist(mse.ridge) - mse.ridge.normal
 elnet.diff <- unlist(mse.elnet) - mse.elnet.normal
 ```
+
 ```{r}
-plot(lasso.diff)
-plot(ridge.diff)
-plot(elnet.diff)
+head(eyegaze)
+```
+
+```{r, message = FALSE, warning = FALSE}
+library(ggplot2)
+library(dplyr)
+idx = seq(1, 76, 1)
+lasso.data <- data.frame(lasso.diff,idx)
+lasso.data <- lasso.data %>% mutate(group = cut(idx, c(0, 10, 33, Inf),
+                                    labels = c("Demographic", "Behavioral Measures", "Eye-tracking Data")))
+ggplot(lasso.data, aes(y = lasso.diff, x = idx, color = group)) + 
+  geom_point() +
+  geom_hline(yintercept = 0, col = "red") +
+  theme_bw() + 
+  labs(title = "MSE change in LASSO",
+       x = "Variable Index",
+       y = "Difference in MSE") +
+  scale_color_manual(values = c("#999999", "#E69F00", "cornflowerblue"))
+```
+
+```{r}
+idx = seq(1, 76, 1)
+ridge.data <- data.frame(ridge.diff,idx)
+ridge.data <- ridge.data %>% mutate(group = cut(idx, c(0, 10, 33, Inf),
+                                    labels = c("Demographic", "Behavioral Measures", "Eye-tracking Data")))
+ggplot(ridge.data, aes(y = ridge.diff, x = idx, color = group)) + 
+  geom_point() +
+  geom_hline(yintercept = 0, col = "red") +
+  theme_bw() + 
+  labs(title = "MSE change in Ridge",
+       x = "Variable Index",
+       y = "Difference in MSE") +
+  scale_color_manual(values = c("#999999", "#E69F00", "cornflowerblue"))
+```
+```{r}
+idx = seq(1, 76, 1)
+elnet.data <- data.frame(elnet.diff,idx)
+elnet.data <- elnet.data %>% mutate(group = cut(idx, c(0, 10, 33, Inf),
+                                    labels = c("Demographic", "Behavioral Measures", "Eye-tracking Data")))
+ggplot(elnet.data, aes(y = elnet.diff, x = idx, color = group)) + 
+  geom_point() +
+  geom_hline(yintercept = 0, col = "red") +
+  theme_bw() + 
+  labs(title = "MSE change in Elastic Net",
+       x = "Variable Index",
+       y = "Difference in MSE") +
+  scale_color_manual(values = c("#999999", "#E69F00", "cornflowerblue"))
 ```
 
 
