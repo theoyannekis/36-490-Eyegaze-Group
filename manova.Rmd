@@ -1,0 +1,46 @@
+---
+title: "manova"
+author: "Steve Kim"
+date: "4/22/2019"
+output: pdf_document
+---
+
+```{r, warning=FALSE, message=FALSE, echo=FALSE, echo=FALSE}
+data.df = read.csv("Eyetracking_Data.csv", na.string = c("999","999.00","#NULL!"), stringsAsFactors = FALSE)
+# remove the subject with missing eye gaze data
+data.df = data.df[-6,c(-4, -5)]
+
+Grade = data.df$Grade
+Order = data.df$Order
+WRI = data.df$WRI_Level
+
+Y = cbind(data.df$Avg_AwayFromText_S, data.df$Avg_AwayFromText_E)
+grade.fit = manova(Y ~ Grade)
+summary(grade.fit)
+print("-------------------------------------------------------------------------------------------")
+order.fit = manova(Y ~ Order)
+summary(order.fit)
+summary.aov(order.fit)
+print("-------------------------------------------------------------------------------------------")
+
+Y2 = cbind(data.df$Comp_S_Percent, data.df$Comp_E_Percent)
+grade.fit2 = manova(Y2 ~ Grade)
+summary(grade.fit2)
+print("-------------------------------------------------------------------------------------------")
+order.fit2 = manova(Y2 ~ Order)
+summary(order.fit2)
+
+summary(manova(Y ~ Order + Grade))
+summary(manova(Y2 ~ Order + Grade))
+
+summary(manova(Y2 ~ WRI))
+```
+
+
+```{r, fig.width=8}
+par(mfrow=c(1,2))
+order5 <- subset(data.df, Order==5)
+plot(order5$Avg_AwayFromText_E, order5$Avg_AwayFromText_S, ylim=c(0,130), xlim=c(0,55))
+order6 <- subset(data.df, Order==6)
+plot(order6$Avg_AwayFromText_E, order6$Avg_AwayFromText_S, ylim=c(0,130), xlim=c(0,55))
+```
