@@ -1,0 +1,33 @@
+---
+title: "Eye Gaze Experiment Exploratory Data Analysis"
+author: "Steve Kim"
+date: "2/11/2019"
+output: pdf_document
+---
+
+# Exploratory Data Analysis on Eyegaze Data
+
+```{r, warning=FALSE, message=FALSE, echo=FALSE}
+library(ggplot2)
+
+data.df = read.csv("Eyetracking_Data.csv", na.string = c("999","999.00","#NULL!"), stringsAsFactors = FALSE)
+
+# first remove the subject with missing eye gaze data
+data.df = data.df[-6,c(-4, -5)]
+
+# histogram on main response variable
+ggplot(data.df, aes(x = CompDiff)) +
+  geom_histogram(binwidth = 15, fill = "#999999") +
+  theme_bw()
+
+ggplot(data.df, aes(x = factor(Grade), y = CompDiff)) +
+  geom_boxplot(fill=c("#999999", "#E69F00")) +
+  theme_bw() + 
+  scale_x_discrete(labels = c("1st Grade", "2nd Grade")) +
+  labs(x="Grade")
+ggplot(data.df, aes(x = factor(Order), y = CompDiff)) +
+  geom_boxplot(fill=c("#999999", "#E69F00")) +
+  theme_bw() + 
+  scale_x_discrete(labels = c("Standard First, Streamlined Second", "Streamlined First, Standard Second")) +  
+  labs(x="Order")
+```
