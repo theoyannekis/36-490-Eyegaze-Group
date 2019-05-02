@@ -1,0 +1,9 @@
+df = read.csv("Eyetracking_Data.csv",na.string=c("999","999.00","#NULL!"))
+
+#Remove the row of the student with no eyetracking data
+df = df[-c(6),]
+
+ggplot(df, aes(x = WRI_Total)) +
+  geom_histogram(binwidth = 10, fill = "#999999") +
+  theme_bw()
+ggsave("hist.png")
