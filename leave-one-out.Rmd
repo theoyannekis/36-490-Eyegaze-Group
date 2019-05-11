@@ -6,9 +6,13 @@ output:
     toc_float:  true
     code_folding:  show
 ---
-```{r, message = F, error = F}
+```{r, message = FALSE, error = FALSE}
 library(glmnet)
 ```
+
+This part of the code conducts the omitted variable bias analysis. This process simply means taking one variable out of the model each time and calculate the change in MSE(goodness-of-fit) between the original model,with that variable included, and the new model, without that variable. If the change in MSE is negative, meaning the model got better after removing the variable, it is likely that this variable is not important. However, if the change in MSE is positive, it is likely that the variable is important since removing this variable leads to less precision of the model.  
+
+This process is done on LASSO, ridge and elastic net regressions.  
 
 ```{r}
 eyegaze <- read.csv("Eyetracking_Data.csv",na.string=c("999","999.00","#NULL!"),stringsAsFactors = FALSE)
@@ -112,6 +116,8 @@ elnet.diff <- unlist(mse.elnet) - mse.elnet.normal
 ```{r}
 head(eyegaze)
 ```
+
+The results are shown in the plots below. Since most of the eyegaze variables have positive MSE change, they are important. For the demographic and behavioral variables, they are not so important as they have 0 or negative MSE change.  
 
 ```{r, message = FALSE, warning = FALSE}
 library(ggplot2)

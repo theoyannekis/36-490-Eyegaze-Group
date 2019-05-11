@@ -6,16 +6,19 @@ output:
     code_folding:  show
 ---
 
-```{r, message = F, error = F}
+```{r, message = FALSE, error = FALSE}
 library(glmnet)
 ```
 
 ```{r}
 eyegaze <- read.csv("Eyetracking_Data.csv",na.string=c("999","999.00","#NULL!"),stringsAsFactors = FALSE)
+#Remove the NA values
 eyegaze <- na.omit(eyegaze)
+#setting id, dot and dob to null since they are not in our concern
 eyegaze$ID <- NULL
 eyegaze$DOT <- NULL
 eyegaze$DOB <- NULL
+#Since compdiff is calculated directly from the following variables, we remove them from the dataset. 
 eyegaze$Comp_E_Percent <- NULL
 eyegaze$Comp_E_Total <- NULL
 eyegaze$Comp_Percent <- NULL
@@ -25,25 +28,29 @@ eyegaze$Comp_S_Percent <- NULL
 ```
 
 ```{r}
-set.seed(100)
+set.seed(110)
+#setting training and testing datasets.
 train.index <- sample(1:nrow(eyegaze), 0.7*nrow(eyegaze))
 train <- eyegaze[train.index, ]
 test <- eyegaze [-train.index, ]
 
+#build x matrix for lasso,elnet and ridge
 x <- model.matrix(CompDiff~., train)[,-1]
 y <- train$CompDiff
 
 x.test <- model.matrix(CompDiff~., test)[,-1]
 y.test <- test$CompDiff
 
+#fitting the model
 fit.lasso <- glmnet(x, y,family="gaussian", alpha=1)
 fit.ridge <- glmnet(x, y,family="gaussian", alpha=0)
 fit.elnet <- glmnet(x, y,family="gaussian", alpha=.5)
-
 ```
 
 
+
 ```{r}
+#using cross validation to find the most appropriate(lowest mse) lambda values for the three models.
 fit.lasso.cv <- cv.glmnet(x, y, type.measure="mse", alpha=1, 
                           family="gaussian")
 fit.ridge.cv <- cv.glmnet(x, y, type.measure="mse", alpha=0,
@@ -64,7 +71,7 @@ for (i in 0:10) {
 ```{r}
 # Plot solution paths:
 par(mfrow=c(3,2))
-# For plotting options, type '?plot.glmnet' in R console
+
 plot(fit.lasso, xvar="lambda")
 plot(fit10, main="LASSO")
 
@@ -74,6 +81,8 @@ plot(fit0, main="Ridge")
 plot(fit.elnet, xvar="lambda")
 plot(fit5, main="Elastic Net")
 ```
+
+Calculating MSE's for the alpha value in the elastic net model.
 
 ```{r}
 yhat0 <- predict(fit0, s=fit0$lambda.1se, newx=x.test)
@@ -105,6 +114,9 @@ for(i in 1:10){
   print(eval(as.name(name)))
 }
 ```
+
+After we have the best lambda values, we fit the model and examine the coefficients. If a variable's coefficient is a ".", it means it is assigned to be zero. As we can see, a lot of variables in the LASSO model has coefficients 0, which indicates that they are not important. However, one thing to keep in mind is that for LASSO, when the dataset has a bunch of highly correlated variables, such as most of the eyegaze variables, the LASSO tends to choose one of them and set the coefficient to non-zero values, while the others are set to zero. Thus, if one of the eyegaze variables has non-zero coefficient, most of the eyegaze variables are likely to be important.  
+
 ```{r}
 bestlam = fit.lasso.cv$lambda.min
 predict(fit.lasso, type = 'coefficients', s = bestlam)
