@@ -1,0 +1,46 @@
+---
+title: "manova"
+author: "Steve Kim"
+date: "4/22/2019"
+output: pdf_document
+---
+
+```{r, warning=FALSE, message=FALSE, echo=FALSE, echo=FALSE}
+data.df = read.csv("Eyetracking_Data.csv", na.string = c("999","999.00","#NULL!"), stringsAsFactors = FALSE)
+# remove the subject with missing eye gaze data
+data.df = data.df[-6,c(-4, -5)]
+
+Grade = data.df$Grade
+Order = data.df$Order
+WRI = data.df$WRI_Level
+
+
+# response variable. Grouped the average away from text variables
+Y = cbind(data.df$Avg_AwayFromText_S, data.df$Avg_AwayFromText_E)
+
+# Average Away from Text against Grade
+grade.fit = manova(Y ~ Grade)
+summary(grade.fit)
+
+# Average Away from Text against Order
+order.fit = manova(Y ~ Order)
+summary(order.fit)
+summary.aov(order.fit)
+
+
+# response variable. Grouped the Percentage of Correct Response
+Y2 = cbind(data.df$Comp_S_Percent, data.df$Comp_E_Percent)
+
+# Percentage of Correct Response against Grade
+grade.fit2 = manova(Y2 ~ Grade)
+summary(grade.fit2)
+
+# Percentage of Correct Response against Order
+order.fit2 = manova(Y2 ~ Order)
+summary(order.fit2)
+```
+
+
+In general, the only case where the MANOVA test result gave a significant result was when the average away from text variable was run against order. However, when running the summary statistic on the one case where the initial MANOVA result gave a significant result, running an analysis of the effect of order on each of the response variable actually resulted in no significant result. 
+We think that the MANOVA outputs in general is not an accurate description of the data because our data violates some of the important assumptions, such as the linearity of the variables. We decided to focus on other methods to check the importance of variables in predicting the result. 
+
